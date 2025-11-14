@@ -1,0 +1,17 @@
+{
+  "name": "rag-chatbot",
+  "version": "1.0.0",
+  "description": "Advanced RAG Chatbot with Google Gemini 2.0 Flash",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && node server.js",
+    "client": "cd frontend && npm start",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+  },
+  "keywords": ["rag", "chatbot", "gemini", "langchain", "faiss"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "company_info": {
+    "full_name": "Oil and Natural Gas Corporation Limited",
+    "abbreviation": "ONGC",
+    "type": "Public Sector Undertaking (PSU)",
+    "founded": "1956-08-14",
+    "headquarters": "Dehradun, Uttarakhand, India",
+    "corporate_office": "ONGC Bhawan, Vasant Kunj, New Delhi",
+    "chairman": "Arun Kumar Singh",
+    "industry": "Oil and Gas Exploration and Production",
+    "revenue": "₹4.76 lakh crore (FY 2022-23)",
+    "employees": "Over 30,000",
+    "stock_exchange": ["BSE", "NSE"],
+    "website": "www.ongcindia.com"
+  },
+  "business_operations": {
+    "core_activities": [
+      "Exploration and production of oil and natural gas",
+      "Offshore and onshore drilling operations",
+      "Enhanced oil recovery",
+      "Gas processing and distribution",
+      "Renewable energy initiatives"
+    ],
+    "production_capacity": {
+      "crude_oil": "~21 million metric tonnes per year",
+      "natural_gas": "~21 billion cubic meters per year"
+    },
+    "operational_areas": [
+      "Western Offshore (Mumbai High)",
+      "Eastern Offshore (Krishna-Godavari Basin)",
+      "Assam and Assam-Arakan Basin",
+      "Cambay Basin (Gujarat)",
+      "Cauvery Basin",
+      "Rajasthan",
+      "Andaman & Nicobar"
+    ]
+  },
+  "major_assets": {
+    "mumbai_high": {
+      "description": "India's largest offshore oil field",
+      "location": "Arabian Sea, 160 km west of Mumbai",
+      "discovered": "1974",
+      "production": "Major contributor to India's oil production"
+    },
+    "bassein_field": {
+      "description": "Major gas field",
+      "location": "Western offshore",
+      "type": "Natural gas"
+    },
+    "kg_basin": {
+      "description": "Krishna-Godavari Basin",
+      "location": "Eastern offshore",
+      "significance": "Major exploration area"
+    }
+  },
+  "subsidiaries": {
+    "ongc_videsh": {
+      "name": "ONGC Videsh Limited (OVL)",
+      "description": "Overseas arm for international E&P operations",
+      "operations": "20+ countries including Russia, Sudan, Venezuela, Myanmar"
+    },
+    "mrpl": {
+      "name": "Mangalore Refinery and Petrochemicals Limited",
+      "description": "Refinery operations",
+      "capacity": "15 MMTPA"
+    },
+    "ongc_petro_additions": {
+      "name": "ONGC Petro additions Limited (OPaL)",
+      "description": "Petrochemical complex",
+      "location": "Dahej, Gujarat"
+    }
+  },
+  "technology_initiatives": {
+    "digitalization": [
+      "AI and ML for reservoir management",
+      "IoT-enabled smart wells",
+      "Digital twin technology",
+      "Drone-based inspections",
+      "Blockchain for supply chain"
+    ],
+    "renewable_energy": [
+      "Solar power projects",
+      "Wind energy",
+      "Geothermal energy exploration",
+      "Hydrogen fuel initiatives",
+      "Carbon capture and storage"
+    ]
+  },
+  "safety_standards": {
+    "certifications": [
+      "ISO 9001 (Quality Management)",
+      "ISO 14001 (Environmental Management)",
+      "ISO 45001 (Occupational Health & Safety)",
+      "ISO 50001 (Energy Management)"
+    ],
+    "safety_programs": [
+      "Process Safety Management (PSM)",
+      "Behavior Based Safety (BBS)",
+      "Emergency Response and Disaster Management",
+      "HSE Management System"
+    ]
+  },
+  "csr_initiatives": {
+    "focus_areas": [
+      "Education and skill development",
+      "Healthcare and sanitation",
+      "Rural development",
+      "Water conservation",
+      "Sports promotion",
+      "Art and culture preservation"
+    ],
+    "budget": "Significant CSR spending as per Companies Act"
+  },
+  "achievements": {
+    "awards": [
+      "Maharatna status (2010)",
+      "Forbes Global 2000 company",
+      "Fortune 500 company",
+      "Multiple national and international awards for excellence"
+    ],
+    "milestones": [
+      "First offshore oil discovery (1974)",
+      "Achieved 1 billion tonnes cumulative oil production",
+      "Largest acreage holder in India",
+      "Contributes ~70% of India's domestic oil production"
+    ]
+  },
+  "training_institutes": {
+    "ongc_energy_centre": {
+      "location": "Dehradun",
+      "description": "Premier training institute for petroleum sector"
+    },
+    "ihrdc": {
+      "name": "Institute of Human Resource Development Centre",
+      "locations": ["Dehradun", "Goa", "Ahmedabad", "Kakinada"],
+      "purpose": "Technical and management training"
+    }
+  },
+  "environmental_commitment": {
+    "initiatives": [
+      "Zero flaring policy",
+      "Afforestation programs",
+      "Marine biodiversity conservation",
+      "Waste management and recycling",
+      "Water conservation projects",
+      "Renewable energy adoption"
+    ],
+    "targets": [
+      "Net zero carbon emissions by 2038",
+      "Increase renewable energy capacity",
+      "Reduce carbon intensity"
+    ]
+  },
+  "common_terms": {
+    "E&P": "Exploration and Production",
+    "PSU": "Public Sector Undertaking",
+    "MMTPA": "Million Metric Tonnes Per Annum",
+    "BCM": "Billion Cubic Meters",
+    "HSE": "Health, Safety, and Environment",
+    "CSR": "Corporate Social Responsibility",
+    "OVL": "ONGC Videsh Limited",
+    "NELP": "New Exploration Licensing Policy",
+    "OALP": "Open Acreage Licensing Policy"
+  }
+}
