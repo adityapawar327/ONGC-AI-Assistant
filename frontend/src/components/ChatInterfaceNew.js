@@ -18,19 +18,11 @@ function ChatInterface({ language = 'english', accuracyMode = 'moderate', contex
 
   // Check for API key on mount
   useEffect(() => {
-    // First check environment variable
-    const envApiKey = process.env.REACT_APP_GEMINI_API_KEY;
-    if (envApiKey) {
-      geminiService.initialize(envApiKey);
-      localStorage.setItem('gemini_api_key', envApiKey);
+    const apiKey = localStorage.getItem('gemini_api_key');
+    if (apiKey) {
+      geminiService.initialize(apiKey);
     } else {
-      // Fall back to localStorage
-      const apiKey = localStorage.getItem('gemini_api_key');
-      if (apiKey) {
-        geminiService.initialize(apiKey);
-      } else {
-        setShowApiKeyModal(true);
-      }
+      setShowApiKeyModal(true);
     }
   }, []);
 

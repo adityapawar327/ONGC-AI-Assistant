@@ -1,18 +1,28 @@
 import React from 'react';
 import './Sidebar.css';
 import { Toast, ConfirmDialog } from './Toast';
-import documentService from '../services/documentService';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 function Sidebar({ language, onLanguageChange, accuracyMode, onAccuracyChange, contextWindow, onContextWindowChange, isOpen, onToggle }) {
   const [documents, setDocuments] = React.useState([]);
+  const [loadingDocs, setLoadingDocs] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
   const [toast, setToast] = React.useState(null);
   const [confirmDialog, setConfirmDialog] = React.useState(null);
   const fileInputRef = React.useRef(null);
 
-  const loadDocuments = () => {
-    const docs = documentService.getDocuments();
-    setDocuments(docs);
+  const loadDocuments = async () => {
+    setLoadingDocs(true);
+    try {
+      const response = await fetch(`${API_URL}/documents/list`);
+      const data = await response.json();
+      setDocuments(data.documents || []);
+    } catch (error) {
+      console.error('Failed to load documents:', error);
+    } finally {
+      setLoadingDocs(false);
+    }
   };
 
   React.useEffect(() => {
@@ -38,25 +48,34 @@ function Sidebar({ language, onLanguageChange, accuracyMode, onAccuracyChange, c
     if (files.length === 0) return;
 
     setUploading(true);
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
 
     try {
-      let totalChunks = 0;
-      for (const file of files) {
-        const chunks = await documentService.processFile(file);
-        totalChunks += chunks;
-      }
+      const response = await fetch(`${API_URL}/documents/upload`, {
+        method: 'POST',
+        body: formData
+      });
 
-      loadDocuments();
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      if (response.ok) {
+        await loadDocuments();
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        showToast(
+          language === 'english' 
+            ? `Successfully uploaded ${files.length} file(s)!` 
+            : `${files.length} फ़ाइल(ें) सफलतापूर्वक अपलोड की गईं!`,
+          'success'
+        );
+      } else {
+        const error = await response.json();
+        console.error('Upload failed:', error);
+        showToast(
+          language === 'english' ? 'Upload failed. Please try again.' : 'अपलोड विफल। कृपया पुनः प्रयास करें।',
+          'error'
+        );
       }
-      
-      showToast(
-        language === 'english' 
-          ? `Successfully uploaded ${files.length} file(s)!` 
-          : `${files.length} फ़ाइल(ें) सफलतापूर्वक अपलोड की गईं!`,
-        'success'
-      );
     } catch (error) {
       console.error('Upload failed:', error);
       showToast(
@@ -75,14 +94,34 @@ function Sidebar({ language, onLanguageChange, accuracyMode, onAccuracyChange, c
         : 'सभी दस्तावेज़ हटाएं? यह सभी अपलोड की गई फ़ाइलों और उनके डेटा को हटा देगा।',
       confirmText: language === 'english' ? 'Clear All' : 'सभी हटाएं',
       cancelText: language === 'english' ? 'Cancel' : 'रद्द करें',
-      onConfirm: () => {
+      onConfirm: async () => {
         setConfirmDialog(null);
-        documentService.clearAll();
-        setDocuments([]);
-        showToast(
-          language === 'english' ? 'All documents cleared successfully!' : 'सभी दस्तावेज़ सफलतापूर्वक हटा दिए गए!',
-          'success'
-        );
+        try {
+          const response = await fetch(`${API_URL}/documents/clear`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success) {
+            setDocuments([]);
+            showToast(
+              language === 'english' ? 'All documents cleared successfully!' : 'सभी दस्तावेज़ सफलतापूर्वक हटा दिए गए!',
+              'success'
+            );
+          } else {
+            throw new Error(result.error || 'Failed to clear documents');
+          }
+        } catch (error) {
+          console.error('Failed to clear documents:', error);
+          showToast(
+            language === 'english' ? 'Failed to clear documents. Please try again.' : 'दस्तावेज़ हटाने में विफल। कृपया पुनः प्रयास करें।',
+            'error'
+          );
+        }
       },
       onCancel: () => setConfirmDialog(null)
     });
@@ -101,11 +140,11 @@ function Sidebar({ language, onLanguageChange, accuracyMode, onAccuracyChange, c
       creativeDesc: 'Flexible - General knowledge',
       contextWindow: 'Context Window',
       short: 'Short',
-      shortDesc: '2 chunks - Quick answers',
+      shortDesc: '4 chunks - Quick answers',
       medium: 'Medium',
-      mediumDesc: '4 chunks - Balanced',
+      mediumDesc: '8 chunks - Balanced',
       high: 'High',
-      highDesc: '8 chunks - Comprehensive',
+      highDesc: '15 chunks - Comprehensive',
       documents: 'Uploaded Documents',
       noDocuments: 'No documents uploaded',
       chunks: 'chunks',
@@ -125,11 +164,11 @@ function Sidebar({ language, onLanguageChange, accuracyMode, onAccuracyChange, c
       creativeDesc: 'लचीला - सामान्य ज्ञान',
       contextWindow: 'संदर्भ विंडो',
       short: 'छोटा',
-      shortDesc: '2 खंड - त्वरित उत्तर',
+      shortDesc: '4 खंड - त्वरित उत्तर',
       medium: 'मध्यम',
-      mediumDesc: '4 खंड - संतुलित',
+      mediumDesc: '8 खंड - संतुलित',
       high: 'उच्च',
-      highDesc: '8 खंड - व्यापक',
+      highDesc: '15 खंड - व्यापक',
       documents: 'अपलोड किए गए दस्तावेज़',
       noDocuments: 'कोई दस्तावेज़ अपलोड नहीं किया गया',
       chunks: 'खंड',
@@ -274,22 +313,22 @@ function Sidebar({ language, onLanguageChange, accuracyMode, onAccuracyChange, c
             <div className="how-to-step">
               <div className="step-number">1</div>
               <div className="step-content">
-                <div className="step-title">{language === 'english' ? 'Set API Key' : 'API कुंजी सेट करें'}</div>
-                <div className="step-desc">{language === 'english' ? 'Get your free Google Gemini API key and enter it when prompted' : 'अपनी मुफ्त Google Gemini API कुंजी प्राप्त करें और संकेत मिलने पर दर्ज करें'}</div>
+                <div className="step-title">{language === 'english' ? 'Upload Documents' : 'दस्तावेज़ अपलोड करें'}</div>
+                <div className="step-desc">{language === 'english' ? 'Click attach button to upload PDF, Excel, CSV, or TXT files (multiple files supported)' : 'अटैच बटन पर क्लिक करें और PDF, Excel, CSV या TXT फ़ाइलें अपलोड करें'}</div>
               </div>
             </div>
             <div className="how-to-step">
               <div className="step-number">2</div>
               <div className="step-content">
-                <div className="step-title">{language === 'english' ? 'Upload Documents' : 'दस्तावेज़ अपलोड करें'}</div>
-                <div className="step-desc">{language === 'english' ? 'Click attach button to upload PDF, TXT, or CSV files' : 'PDF, TXT या CSV फ़ाइलें अपलोड करने के लिए अटैच बटन पर क्लिक करें'}</div>
+                <div className="step-title">{language === 'english' ? 'Choose Settings' : 'सेटिंग्स चुनें'}</div>
+                <div className="step-desc">{language === 'english' ? 'Select language, accuracy mode, and context window from sidebar' : 'साइडबार से भाषा, सटीकता मोड और संदर्भ विंडो चुनें'}</div>
               </div>
             </div>
             <div className="how-to-step">
               <div className="step-number">3</div>
               <div className="step-content">
                 <div className="step-title">{language === 'english' ? 'Ask Questions' : 'प्रश्न पूछें'}</div>
-                <div className="step-desc">{language === 'english' ? 'Type your questions and get AI-powered answers' : 'अपने प्रश्न टाइप करें और AI उत्तर प्राप्त करें'}</div>
+                <div className="step-desc">{language === 'english' ? 'Type your questions about uploaded documents and get AI-powered answers' : 'अपलोड किए गए दस्तावेज़ों के बारे में प्रश्न पूछें और AI उत्तर प्राप्त करें'}</div>
               </div>
             </div>
           </div>
@@ -303,7 +342,7 @@ function Sidebar({ language, onLanguageChange, accuracyMode, onAccuracyChange, c
               ref={fileInputRef}
               type="file"
               multiple
-              accept=".pdf,.txt,.csv"
+              accept=".pdf,.txt,.xlsx,.xls,.csv"
               onChange={handleFileUpload}
               style={{ display: 'none' }}
             />
@@ -337,7 +376,9 @@ function Sidebar({ language, onLanguageChange, accuracyMode, onAccuracyChange, c
           </div>
 
           <div className="documents-list">
-            {documents.length === 0 ? (
+            {loadingDocs ? (
+              <div className="loading-docs">Loading...</div>
+            ) : documents.length === 0 ? (
               <div className="no-documents">{t.noDocuments}</div>
             ) : (
               documents.map((doc, index) => (
@@ -353,7 +394,7 @@ function Sidebar({ language, onLanguageChange, accuracyMode, onAccuracyChange, c
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
                       </svg>
                     )}
-                    {doc.type === 'excel' && (
+                    {(doc.type === 'excel' || doc.type === 'csv') && (
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
                       </svg>
@@ -371,7 +412,7 @@ function Sidebar({ language, onLanguageChange, accuracyMode, onAccuracyChange, c
 
         <div className="sidebar-footer">
           <p>{t.footer}</p>
-          <p className="version">v3.0.0 - Client-Side</p>
+          <p className="version">v2.0.0</p>
         </div>
       </div>
       

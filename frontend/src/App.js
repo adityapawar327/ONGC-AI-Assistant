@@ -9,22 +9,7 @@ function App() {
   const [contextWindow, setContextWindow] = useState('medium');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Clear documents on app mount/refresh
-  React.useEffect(() => {
-    const clearDocumentsOnRefresh = async () => {
-      try {
-        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-        await fetch(`${API_URL}/documents/clear`, {
-          method: 'POST'
-        });
-        console.log('📝 Documents cleared on app refresh');
-      } catch (error) {
-        console.error('Failed to clear documents:', error);
-      }
-    };
-
-    clearDocumentsOnRefresh();
-  }, []);
+  // Frontend-only version - no backend needed
 
   const handleLanguageChange = (newLanguage) => {
     setLanguage(newLanguage);

@@ -1,48 +1,33 @@
 import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import './ChatInterface.css';
-import geminiService from '../services/geminiService';
-import documentService from '../services/documentService';
-import ragService from '../services/ragService';
-import ApiKeyModal from './ApiKeyModal';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 function ChatInterface({ language = 'english', accuracyMode = 'moderate', contextWindow = 'medium' }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+
   const [copiedIndex, setCopiedIndex] = useState(null);
-
-  // Check for API key on mount
-  useEffect(() => {
-    // First check environment variable
-    const envApiKey = process.env.REACT_APP_GEMINI_API_KEY;
-    if (envApiKey) {
-      geminiService.initialize(envApiKey);
-      localStorage.setItem('gemini_api_key', envApiKey);
-    } else {
-      // Fall back to localStorage
-      const apiKey = localStorage.getItem('gemini_api_key');
-      if (apiKey) {
-        geminiService.initialize(apiKey);
-      } else {
-        setShowApiKeyModal(true);
-      }
-    }
-  }, []);
-
-  const handleApiKeySave = (apiKey) => {
-    geminiService.initialize(apiKey);
-    setShowApiKeyModal(false);
-  };
 
   const translations = {
     english: {
       welcome: 'Welcome to ONGC AI Assistant',
       description: 'Your intelligent document assistant for Oil and Natural Gas Corporation Limited',
+      uploadDocs: 'Upload documents',
+      uploadDesc: 'using the attach button below',
+      askQuestions: 'Ask questions',
+      askDesc: 'about your uploaded documents',
+      getStarted: 'Get started:',
+      step1: 'Upload ONGC reports, policies, or technical documents (PDF/TXT)',
+      step2: 'Wait for processing confirmation',
+      step3: 'Ask questions about operations, procedures, or data',
+      step4: 'Get AI-powered answers with source citations',
       placeholder: 'Ask a question or upload a document...',
       uploading: 'Uploading and processing',
       uploadSuccess: 'Successfully processed',
@@ -57,6 +42,15 @@ function ChatInterface({ language = 'english', accuracyMode = 'moderate', contex
     hindi: {
       welcome: 'ONGC AI सहायक में आपका स्वागत है',
       description: 'तेल और प्राकृतिक गैस निगम लिमिटेड के लिए आपका बुद्धिमान दस्तावेज़ सहायक',
+      uploadDocs: 'दस्तावेज़ अपलोड करें',
+      uploadDesc: 'नीचे अटैच बटन का उपयोग करके',
+      askQuestions: 'प्रश्न पूछें',
+      askDesc: 'अपने अपलोड किए गए दस्तावेज़ों के बारे में',
+      getStarted: 'शुरू करें:',
+      step1: 'ONGC रिपोर्ट, नीतियां, या तकनीकी दस्तावेज़ अपलोड करें (PDF/TXT)',
+      step2: 'प्रसंस्करण पुष्टि की प्रतीक्षा करें',
+      step3: 'संचालन, प्रक्रियाओं या डेटा के बारे में प्रश्न पूछें',
+      step4: 'स्रोत उद्धरणों के साथ AI-संचालित उत्तर प्राप्त करें',
       placeholder: 'एक प्रश्न पूछें या दस्तावेज़ अपलोड करें...',
       uploading: 'अपलोड और प्रसंस्करण',
       uploadSuccess: 'सफलतापूर्वक संसाधित',
@@ -70,16 +64,6 @@ function ChatInterface({ language = 'english', accuracyMode = 'moderate', contex
     }
   };
 
-  const t = translations[language];
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   const handleCopyMessage = async (content, index) => {
     try {
       await navigator.clipboard.writeText(content);
@@ -90,45 +74,42 @@ function ChatInterface({ language = 'english', accuracyMode = 'moderate', contex
     }
   };
 
+  const t = translations[language];
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
     setUploading(true);
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+
+    // Add upload message
     const fileNames = files.map(f => f.name).join(', ');
-    
     setMessages(prev => [...prev, {
       role: 'system',
       content: `${t.uploading} ${files.length} file(s): ${fileNames}...`
     }]);
 
     try {
-      let totalChunks = 0;
-      const processedFiles = [];
+      const response = await axios.post(`${API_URL}/documents/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
-      for (const file of files) {
-        try {
-          const chunks = await documentService.processFile(file);
-          totalChunks += chunks;
-          processedFiles.push({
-            filename: file.name,
-            chunksAdded: chunks,
-            success: true
-          });
-        } catch (error) {
-          console.error(`Error processing ${file.name}:`, error);
-          processedFiles.push({
-            filename: file.name,
-            error: error.message,
-            success: false
-          });
-        }
-      }
+      const successCount = response.data.files.filter(f => f.success).length;
+      const failCount = response.data.files.length - successCount;
 
-      const successCount = processedFiles.filter(f => f.success).length;
-      const failCount = processedFiles.length - successCount;
-
-      let resultMessage = `${t.uploadSuccess} ${successCount} file(s) (${totalChunks} ${t.chunksAdded}`;
+      let resultMessage = `${t.uploadSuccess} ${successCount} file(s) (${response.data.totalChunks} ${t.chunksAdded}`;
       if (failCount > 0) {
         resultMessage += `\nWarning: ${failCount} file(s) failed to process`;
       }
@@ -146,7 +127,7 @@ function ChatInterface({ language = 'english', accuracyMode = 'moderate', contex
     } catch (error) {
       setMessages(prev => [...prev, {
         role: 'system',
-        content: `Error: ${t.uploadFail}. ${error.message || t.tryAgain}`,
+        content: `Error: ${t.uploadFail}. ${error.response?.data?.error || t.tryAgain}`,
         error: true
       }]);
     } finally {
@@ -159,30 +140,25 @@ function ChatInterface({ language = 'english', accuracyMode = 'moderate', contex
     e.preventDefault();
     if (!input.trim() || loading) return;
 
-    // Check if API key is set
-    if (!localStorage.getItem('gemini_api_key')) {
-      setShowApiKeyModal(true);
-      return;
-    }
-
     const userMessage = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
 
     try {
-      const response = await ragService.query(input, {
-        language,
-        accuracyMode,
-        contextWindow
+      const response = await axios.post(`${API_URL}/chat/query`, {
+        question: input,
+        language: language,
+        accuracyMode: accuracyMode,
+        contextWindow: contextWindow
       });
 
       const assistantMessage = {
         role: 'assistant',
-        content: response.answer,
-        sources: response.sources,
-        hasContext: response.context,
-        confidence: response.confidence
+        content: response.data.answer,
+        sources: response.data.sources,
+        hasContext: response.data.context,
+        confidence: response.data.confidence
       };
 
       setMessages(prev => [...prev, assistantMessage]);
@@ -190,9 +166,7 @@ function ChatInterface({ language = 'english', accuracyMode = 'moderate', contex
       console.error('Error:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: language === 'english' 
-          ? 'Sorry, I encountered an error processing your request. Please check your API key and try again.'
-          : 'क्षमा करें, आपके अनुरोध को संसाधित करते समय मुझे एक त्रुटि का सामना करना पड़ा। कृपया अपनी API कुंजी जांचें और पुनः प्रयास करें।',
+        content: 'Sorry, I encountered an error processing your request.',
         error: true
       }]);
     } finally {
@@ -202,13 +176,6 @@ function ChatInterface({ language = 'english', accuracyMode = 'moderate', contex
 
   return (
     <div className="chat-interface">
-      {showApiKeyModal && (
-        <ApiKeyModal
-          onSave={handleApiKeySave}
-          onClose={() => setShowApiKeyModal(false)}
-        />
-      )}
-
       <div className="messages-container">
         {messages.length === 0 && (
           <div className="welcome-message">
