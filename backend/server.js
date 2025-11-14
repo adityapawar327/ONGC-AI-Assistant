@@ -41,11 +41,17 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'RAG Chatbot API is running' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🛢️  ONGC AI Assistant API ready at http://localhost:${PORT}`);
-  console.log(`💬 Frontend at http://localhost:3000`);
-  console.log(`💡 Upload ONGC documents using the 📎 button in the chat interface`);
-  console.log(`📝 Starting with fresh vector store - upload documents to begin`);
-  console.log(`🧠 ONGC knowledge base integrated for contextual responses`);
-});
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🛢️  ONGC AI Assistant API ready at http://localhost:${PORT}`);
+    console.log(`💬 Frontend at http://localhost:3000`);
+    console.log(`💡 Upload ONGC documents using the 📎 button in the chat interface`);
+    console.log(`📝 Starting with fresh vector store - upload documents to begin`);
+    console.log(`🧠 ONGC knowledge base integrated for contextual responses`);
+  });
+}
+
+// Export for Vercel serverless
+export default app;
