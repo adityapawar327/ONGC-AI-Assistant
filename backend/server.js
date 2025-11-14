@@ -20,8 +20,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://frontend-2iwep2k46-aditya-pawars-projects-eddc51c8.vercel.app',
-    'https://frontend-aditya-pawars-projects-eddc51c8.vercel.app'
+    'https://frontend-jg85q9qtf-aditya-pawars-projects-eddc51c8.vercel.app',
+    'https://frontend-aditya-pawars-projects-eddc51c8.vercel.app',
+    /\.vercel\.app$/
   ],
   credentials: true
 }));
